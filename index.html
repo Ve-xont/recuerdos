@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEXONT · Carga tu Recuerdo</title>
-    <!-- Usamos una librería moderna que soporta textos ultra largos sin romperse -->
+    <!-- Librería para generar códigos QR -->
     <script src="https://cloudflare.com"></script>
     <style>
         :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
@@ -54,20 +54,22 @@
     <div id="resultado">
         <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu Portada Interactiva está lista!</p>
         <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
-        <!-- Cambiado a elemento canvas nativo para máxima velocidad -->
         <canvas id="qrcode-canvas"></canvas>
     </div>
 </div>
 
 <script>
-    // PEGA AQUÍ TU LLAVE COPIADA DE IMGBB DENTRO DE LAS COMILLAS
+    // ⚠️ ATENCIÓN: Borra las letras de abajo (deja las comillas) y pon tu clave real de ImgBB
     const IMGBB_API_KEY = "99aabe6bc3a71ff9d80af0e80f6d38b9";
 
     async function subirAImgBB(file) {
         const formData = new FormData();
         formData.append("image", file);
         
-       const respuesta = await fetch(`https://api.imgbb.com//upload?key=${IMGBB_API_KEY}`, {
+        // Dirección armada de forma segura para evitar recortes del chat
+        const urlAPI = "https:" + "//" + "://imgbb.com" + "/1/upload?key=" + IMGBB_API_KEY;
+        
+        const respuesta = await fetch(urlAPI, {
             method: "POST",
             body: formData
         });
@@ -89,22 +91,25 @@
 
         const boton = document.querySelector('button');
         const estadoCarga = document.getElementById('estado-carga');
-        boton.style.display = 'none';
-        estadoCarga.style.display = 'block';
+        if(boton) boton.style.display = 'none';
+        if(estadoCarga) estadoCarga.style.display = 'block';
 
         let linksFotos = [];
         const totalFotos = fotoInput.files.length;
 
         try {
             for (let i = 0; i < totalFotos; i++) {
-                document.getElementById('progreso-texto').innerText = `${Math.round((i / totalFotos) * 100)}%`;
+                const porc = Math.round((i / totalFotos) * 100);
+                const txtProgreso = document.getElementById('progreso-texto');
+                if(txtProgreso) txtProgreso.innerText = porc + "%";
+                
                 const urlFoto = await subirAImgBB(fotoInput.files[i]);
                 linksFotos.push(urlFoto);
             }
         } catch(error) {
             alert("Problema de conexión o llave API inválida.");
-            boton.style.display = 'block';
-            estadoCarga.style.display = 'none';
+            if(boton) boton.style.display = 'block';
+            if(estadoCarga) estadoCarga.style.display = 'none';
             return;
         }
 
@@ -112,17 +117,16 @@
         const datosString = JSON.stringify(datosRecuerdo);
         const datosBase64 = btoa(encodeURIComponent(datosString));
         
-        const urlVisor = "https://github.io" + datosBase64;
+        const urlVisor = "https:" + "//" + "ve-xont.github.io" + "/recuerdos/visor.html?d=" + datosBase64;
 
-        // Generación infalible usando la nueva librería QRious sobre Canvas
         new QRious({
             element: document.getElementById('qrcode-canvas'),
             value: urlVisor,
             size: 260,
-            level: 'L' // Nivel optimizado para URLs con colecciones extensas
+            level: 'L'
         });
 
-        estadoCarga.style.display = 'none';
+        if(estadoCarga) estadoCarga.style.display = 'none';
         document.getElementById('formulario-section').style.display = 'none';
         document.getElementById('resultado').style.display = 'block';
     }
