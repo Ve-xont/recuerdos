@@ -4,19 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEXONT · Tu Recuerdo Vivo</title>
-    <!-- Agregamos la misma librería de descompresión -->
-    <script src="https://cloudflare.com"></script>
     <style>
-        :root {
-            --verde-profundo: #0f2b26;
-            --ocre-calido: #c27d56;
-            --fondo-oscuro: #121918;
-            --tarjeta-fondo: #1b2423;
-            --texto-principal: #f5f7f6;
-            --texto-secundario: #a3b1af;
-        }
+        :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-oscuro: #121918; --tarjeta-fondo: #1b2423; --texto-principal: #f5f7f6; --texto-secundario: #a3b1af; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--fondo-oscuro); color: var(--texto-principal); min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--fondo-oscuro); color: var(--texto-principal); min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
         .fade-in-up { animation: fadeInUp 1.2s cubic-bezier(0.215, 0.610, 0.355, 1) forwards; opacity: 0; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(25px); } to { opacity: 1; transform: translateY(0); } }
         header { width: 100%; padding: 30px 0; text-align: center; background: linear-gradient(to bottom, rgba(15,43,38,0.6), transparent); }
@@ -47,7 +38,7 @@
 <body>
 
     <header class="fade-in-up">
-        <div class="logo-texto">VEX<span>ONT</span></div>
+        <div class="logo-texto">VEX<span>O</span>NT</div>
         <div class="slogan">Encuentra tu eje</div>
     </header>
 
@@ -87,13 +78,12 @@
         window.onload = function() {
             try {
                 const urlParams = new URLSearchParams(window.location.search);
-                // Leemos el parámetro comprimido "d"
                 const dataParam = urlParams.get('d');
 
                 if (!dataParam) return;
 
-                // Descomprimimos los datos en el celular del cliente
-                const datosString = LZString.decompressFromEncodedURIComponent(dataParam);
+                // Decodificamos el texto de la URL de forma directa
+                const datosString = decodeURIComponent(atob(dataParam));
                 const recuerdo = JSON.parse(datosString);
 
                 document.getElementById('lbl-titulo').innerText = recuerdo.t || "Nuestro Momento";
@@ -119,11 +109,11 @@
 
                 const grid = document.getElementById('galeria-grid');
                 if (recuerdo.i && recuerdo.i.length > 0) {
-                    recuerdo.i.forEach(src => {
+                    recuerdo.i.forEach(urlFoto => {
                         const box = document.createElement('div');
                         box.className = 'foto-container';
                         const img = document.createElement('img');
-                        img.src = src;
+                        img.src = urlFoto; // Carga la imagen directamente desde la nube de forma veloz
                         box.appendChild(img);
                         grid.appendChild(box);
                     });
@@ -155,7 +145,7 @@
                 caja.innerHTML = '<p style="font-size:12px; color:var(--texto-secundario); text-align:center;">No hay mensajes aún.</p>';
                 return;
             }
-            mensajes.forEach(m => {
+            messages.forEach(m => {
                 const item = document.createElement('div');
                 item.className = 'mensaje-item';
                 item.innerHTML = `<div class="mensaje-autor">${m.autor}</div><div>${m.contenido}</div>`;
