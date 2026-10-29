@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEXONT · Carga tu Recuerdo</title>
+    <!-- Usamos una librería moderna que soporta textos ultra largos sin romperse -->
     <script src="https://cloudflare.com"></script>
     <style>
         :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
@@ -18,7 +19,7 @@
         textarea { height: 110px; resize: none; }
         button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        #qrcode { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; }
+        #qrcode-canvas { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; max-width: 100%; }
         #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
     </style>
 </head>
@@ -47,30 +48,31 @@
         <input type="file" id="fotos" accept="image/*" multiple>
 
         <button onclick="generarRecuerdo()">✨ CREAR MI CÓDIGO QR</button>
-        <div id="estado-carga">⏳ Procesando y subiendo imágenes de forma segura... <span id="progreso-texto">0%</span></div>
+        <div id="estado-carga">⏳ Subiendo imágenes a tu galería privada... <span id="progreso-texto">0%</span></div>
     </div>
 
     <div id="resultado">
         <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu Portada Interactiva está lista!</p>
         <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
-        <div id="qrcode"></div>
+        <!-- Cambiado a elemento canvas nativo para máxima velocidad -->
+        <canvas id="qrcode-canvas"></canvas>
     </div>
 </div>
 
 <script>
-    // REEMPLAZA ESTE TEXTO CON LA LLAVE QUE COPIASTE DE IMGBB
+    // PEGA AQUÍ TU LLAVE COPIADA DE IMGBB DENTRO DE LAS COMILLAS
     const IMGBB_API_KEY = "TU_LLAVE_DE_IMGBB_AQUI";
 
     async function subirAImgBB(file) {
         const formData = new FormData();
         formData.append("image", file);
-        99aabe6bc3a71ff9d80af0e80f6d38b9
+        
         const respuesta = await fetch(`https://imgbb.com{IMGBB_API_KEY}`, {
             method: "POST",
             body: formData
         });
         const datos = await respuesta.json();
-        return datos.data.url; // Retorna la URL directa en la nube de la foto
+        return datos.data.url; 
     }
 
     async function generarRecuerdo() {
@@ -100,30 +102,24 @@
                 linksFotos.push(urlFoto);
             }
         } catch(error) {
-            alert("Hubo un problema al subir las imágenes. Verifica tu llave de API o conexión.");
+            alert("Problema de conexión o llave API inválida.");
             boton.style.display = 'block';
             estadoCarga.style.display = 'none';
             return;
         }
 
-        // Al guardar URLs de texto cortas en vez de imágenes binarias, el peso disminuye un 99%
         const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: linksFotos };
         const datosString = JSON.stringify(datosRecuerdo);
-        
-        // Codificamos de forma segura
         const datosBase64 = btoa(encodeURIComponent(datosString));
         
         const urlVisor = "https://github.io" + datosBase64;
 
-        document.getElementById("qrcode").innerHTML = "";
-
-        new QRCode(document.getElementById("qrcode"), {
-            text: urlVisor,
-            width: 260,
-            height: 260,
-            colorDark : "#0f2b26",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.M
+        // Generación infalible usando la nueva librería QRious sobre Canvas
+        new QRious({
+            element: document.getElementById('qrcode-canvas'),
+            value: urlVisor,
+            size: 260,
+            level: 'L' // Nivel optimizado para URLs con colecciones extensas
         });
 
         estadoCarga.style.display = 'none';
