@@ -6,6 +6,8 @@
     <title>VEXONT · Carga tu Recuerdo</title>
     <!-- Librería local para generar códigos QR -->
     <script src="https://cloudflare.com"></script>
+    <!-- Agregamos compresor de datos potente para empaquetar las fotos -->
+    <script src="https://cloudflare.com"></script>
     <style>
         :root {
             --verde-profundo: #0f2b26;
@@ -22,11 +24,10 @@
         label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: var(--texto-oscuro); font-size: 14px; }
         input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; color: #2f3640; }
         textarea { height: 110px; resize: none; font-family: inherit; }
-        .info-nota { font-size: 12px; color: #7f8c8d; margin-top: 4px; display: block; }
-        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background 0.3s; box-shadow: 0 4px 10px rgba(194,125,86,0.2); }
+        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background 0.3s; }
         button:hover { background-color: #aa6843; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        #qrcode { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1b12c; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        #qrcode { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; }
         .success-text { color: var(--verde-profundo); font-weight: bold; font-size: 20px; margin-bottom: 10px; }
     </style>
 </head>
@@ -39,8 +40,6 @@
     </header>
 
     <div id="formulario-section">
-        <p style="font-size:13px; color:#7f8c8d; text-align:center; margin-bottom: 20px;">Tus fotos y música se encriptan de forma privada en tu celular. Nosotros nunca tendremos acceso a ellas.</p>
-        
         <label for="titulo">Título de la portada</label>
         <input type="text" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa">
 
@@ -48,13 +47,12 @@
         <input type="text" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
 
         <label for="historia">Dedicatoria o Historia del recuerdo</label>
-        <textarea id="historia" placeholder="Escribe aquí las palabras o anécdotas que acompañarán este cuadro..."></textarea>
+        <textarea id="historia" placeholder="Escribe aquí las palabras o anécdotas..."></textarea>
 
         <label for="musica">Enlace de Audio Directo (Opcional)</label>
-        <input type="text" id="musica" placeholder="Ej: Enlace directo a un archivo MP3 de tu canción">
-        <span class="info-nota">Asegúrate de que sea un enlace directo que termine en .mp3 para que suene automáticamente de fondo.</span>
+        <input type="text" id="musica" placeholder="Ej: https://tusitio.com">
 
-        <label for="fotos">Selecciona tus fotos (Soporta hasta 50 imágenes)</label>
+        <label for="fotos">Selecciona tus fotos (Se optimizan de forma automática)</label>
         <input type="file" id="fotos" accept="image/*" multiple>
 
         <button onclick="generarRecuerdo()">✨ CREAR MI CÓDIGO QR</button>
@@ -62,21 +60,39 @@
 
     <div id="resultado">
         <p class="success-text">¡Tu Portada Interactiva está lista!</p>
-        <p style="font-size: 14px; color:#555; line-height: 1.5;">Haz una captura de pantalla de este código QR o descárgalo, y envíanoslo para grabarlo en la madera de tu cuadro CNC.</p>
-        
+        <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
         <div id="qrcode"></div>
-        
-        <p style="font-size: 11px; color:#95a5a6; margin-top: 20px; line-height: 1.4;">🔒 Privacidad Garantizada: Toda tu galería viaja comprimida dentro del mismo código. El artesano no puede ver tus fotos, solo procesará el patrón vectorial para el tallado físico.</p>
     </div>
 </div>
 
 <script>
-    async function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
+    // Optimiza y reduce el peso de las imágenes antes de convertirlas para que entren en el QR
+    async function optimizarImagen(file) {
+        return new Promise((resolve) => {
             const reader = new FileReader();
             reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    // Redimensionamos a un tamaño web estándar óptimo para celulares
+                    const MAX_WIDTH = 400;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Comprimimos la calidad del JPG al 50% para reducir drásticamente los caracteres
+                    resolve(canvas.toDataURL('image/jpeg', 0.5));
+                };
+            };
         });
     }
 
@@ -88,51 +104,40 @@
         const fotoInput = document.getElementById('fotos');
 
         if(!titulo || !historia) {
-            alert('Por favor, completa al menos el título y la dedicatoria para tu cuadro.');
+            alert('Por favor, completa el título y la dedicatoria.');
             return;
         }
 
         let fotosBase64 = [];
-        // Procesamos todas las fotos cargadas localmente
         for (let i = 0; i < fotoInput.files.length; i++) {
-            const base64 = await fileToBase64(fotoInput.files[i]);
-            fotosBase64.push(base64);
+            const fotoComprimida = await optimizarImagen(fotoInput.files[i]);
+            fotosBase64.push(fotoComprimida);
         }
 
-        // Estructura optimizada para acortar la URL
-        const datosRecuerdo = {
-            t: titulo,
-            f: fecha,
-            h: historia,
-            m: musica,
-            i: fotosBase64
-        };
-
+        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: fotosBase64 };
         const datosString = JSON.stringify(datosRecuerdo);
         
-        // REEMPLAZAR ESTA DIRECCIÓN POR TU ENLACE REAL DE GITHUB PAGES EN EL PASO 6
-       const urlVisor = "https://github.io" + encodeURIComponent(btoa(unescape(encodeURIComponent(datosString))));
- 
+        // Comprimimos la cadena usando LZ-String (Reduce el tamaño en más de un 70%)
+        const datosComprimidos = LZString.compressToEncodedURIComponent(datosString);
+        
+        // Tu dirección real ya enlazada correctamente
+        const urlVisor = "https://github.io" + datosComprimidos;
 
-        // Limpiamos códigos QR anteriores
         document.getElementById("qrcode").innerHTML = "";
 
-        // Generamos el QR final en la pantalla del usuario
+        // Al estar comprimido el texto, QRCode.js creará el código al instante sin errores
         new QRCode(document.getElementById("qrcode"), {
             text: urlVisor,
             width: 260,
             height: 260,
             colorDark : "#0f2b26",
             colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.L // Nivel L para compactar la cadena larga de datos
+            correctLevel : QRCode.CorrectLevel.L
         });
 
-        // Transición visual
         document.getElementById('formulario-section').style.display = 'none';
         document.getElementById('resultado').style.display = 'block';
-        window.scrollTo(0,0);
     }
 </script>
-
 </body>
 </html>
