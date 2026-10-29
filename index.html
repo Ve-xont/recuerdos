@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEXONT · Carga tu Recuerdo</title>
-    <!-- Librería para generar códigos QR -->
-    <script src="https://cloudflare.com"></script>
     <style>
         :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--fondo-claro); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -19,7 +17,7 @@
         textarea { height: 110px; resize: none; }
         button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        #qrcode-canvas { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; max-width: 100%; }
+        #qrcode-img { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; max-width: 100%; }
         #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
     </style>
 </head>
@@ -54,25 +52,28 @@
     <div id="resultado">
         <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu Portada Interactiva está lista!</p>
         <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
-        <canvas id="qrcode-canvas"></canvas>
+        <img id="qrcode-img" src="" alt="Código QR de tu recuerdo">
     </div>
 </div>
 
 <script>
-    // ⚠️ ATENCIÓN: Borra las letras de abajo (deja las comillas) y pon tu clave real de ImgBB
     const IMGBB_API_KEY = "99aabe6bc3a71ff9d80af0e80f6d38b9";
 
     async function subirAImgBB(file) {
         const formData = new FormData();
         formData.append("image", file);
         
-        // Dirección armada de forma segura para evitar recortes del chat
         const urlAPI = "https:" + "//" + "://imgbb.com" + "/1/upload?key=" + IMGBB_API_KEY;
         
         const respuesta = await fetch(urlAPI, {
             method: "POST",
             body: formData
         });
+        
+        if (!respuesta.ok) {
+            throw new Error("Error en el servidor de imágenes");
+        }
+        
         const datos = await respuesta.json();
         return datos.data.url; 
     }
@@ -106,8 +107,13 @@
                 const urlFoto = await subirAImgBB(fotoInput.files[i]);
                 linksFotos.push(urlFoto);
             }
+            
+            // Forzamos visualización de 100% al terminar las cargas
+            const txtProgreso = document.getElementById('progreso-texto');
+            if(txtProgreso) txtProgreso.innerText = "100%";
+            
         } catch(error) {
-            alert("Problema de conexión o llave API inválida.");
+            alert("Hubo un problema de comunicación con el servidor. Revisa tu conexión de internet e intenta de nuevo.");
             if(boton) boton.style.display = 'block';
             if(estadoCarga) estadoCarga.style.display = 'none';
             return;
@@ -119,12 +125,10 @@
         
         const urlVisor = "https:" + "//" + "ve-xont.github.io" + "/recuerdos/visor.html?d=" + datosBase64;
 
-        new QRious({
-            element: document.getElementById('qrcode-canvas'),
-            value: urlVisor,
-            size: 260,
-            level: 'L'
-        });
+        // Generador nativo por la API de Google: veloz, ligero y libre de trabas por caracteres largos
+        const googleQRUrl = "https:" + "//" + "://googleapis.com" + "/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(urlVisor) + "&choe=UTF-8";
+        
+        document.getElementById('qrcode-img').src = googleQRUrl;
 
         if(estadoCarga) estadoCarga.style.display = 'none';
         document.getElementById('formulario-section').style.display = 'none';
