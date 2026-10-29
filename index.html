@@ -4,31 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEXONT · Carga tu Recuerdo</title>
-    <!-- Librería local para generar códigos QR -->
-    <script src="https://cloudflare.com"></script>
-    <!-- Agregamos compresor de datos potente para empaquetar las fotos -->
     <script src="https://cloudflare.com"></script>
     <style>
-        :root {
-            --verde-profundo: #0f2b26;
-            --ocre-calido: #c27d56;
-            --fondo-claro: #f4f7f6;
-            --texto-oscuro: #2c3e50;
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--fondo-claro); color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--fondo-claro); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 500px; width: 100%; }
         header { text-align: center; margin-bottom: 25px; }
         .logo-texto { font-size: 26px; font-weight: 800; letter-spacing: 5px; color: var(--verde-profundo); margin: 0; }
         .logo-texto span { color: var(--ocre-calido); }
         .slogan { font-size: 9px; letter-spacing: 3px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px; }
-        label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: var(--texto-oscuro); font-size: 14px; }
-        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; color: #2f3640; }
-        textarea { height: 110px; resize: none; font-family: inherit; }
-        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background 0.3s; }
-        button:hover { background-color: #aa6843; }
+        label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: #2c3e50; font-size: 14px; }
+        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; }
+        textarea { height: 110px; resize: none; }
+        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
         #qrcode { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; }
-        .success-text { color: var(--verde-profundo); font-weight: bold; font-size: 20px; margin-bottom: 10px; }
+        #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
     </style>
 </head>
 <body>
@@ -52,48 +43,34 @@
         <label for="musica">Enlace de Audio Directo (Opcional)</label>
         <input type="text" id="musica" placeholder="Ej: https://tusitio.com">
 
-        <label for="fotos">Selecciona tus fotos (Se optimizan de forma automática)</label>
+        <label for="fotos">Selecciona tus fotos (¡Soporta hasta 50 imágenes!)</label>
         <input type="file" id="fotos" accept="image/*" multiple>
 
         <button onclick="generarRecuerdo()">✨ CREAR MI CÓDIGO QR</button>
+        <div id="estado-carga">⏳ Procesando y subiendo imágenes de forma segura... <span id="progreso-texto">0%</span></div>
     </div>
 
     <div id="resultado">
-        <p class="success-text">¡Tu Portada Interactiva está lista!</p>
+        <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu Portada Interactiva está lista!</p>
         <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
         <div id="qrcode"></div>
     </div>
 </div>
 
 <script>
-    // Optimiza y reduce el peso de las imágenes antes de convertirlas para que entren en el QR
-    async function optimizarImagen(file) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    // Redimensionamos a un tamaño web estándar óptimo para celulares
-                    const MAX_WIDTH = 400;
-                    let width = img.width;
-                    let height = img.height;
+    // REEMPLAZA ESTE TEXTO CON LA LLAVE QUE COPIASTE DE IMGBB
+    const IMGBB_API_KEY = "TU_LLAVE_DE_IMGBB_AQUI";
 
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    // Comprimimos la calidad del JPG al 50% para reducir drásticamente los caracteres
-                    resolve(canvas.toDataURL('image/jpeg', 0.5));
-                };
-            };
+    async function subirAImgBB(file) {
+        const formData = new FormData();
+        formData.append("image", file);
+        
+        const respuesta = await fetch(`https://imgbb.com{IMGBB_API_KEY}`, {
+            method: "POST",
+            body: formData
         });
+        const datos = await respuesta.json();
+        return datos.data.url; // Retorna la URL directa en la nube de la foto
     }
 
     async function generarRecuerdo() {
@@ -108,33 +85,48 @@
             return;
         }
 
-        let fotosBase64 = [];
-        for (let i = 0; i < fotoInput.files.length; i++) {
-            const fotoComprimida = await optimizarImagen(fotoInput.files[i]);
-            fotosBase64.push(fotoComprimida);
+        const boton = document.querySelector('button');
+        const estadoCarga = document.getElementById('estado-carga');
+        boton.style.display = 'none';
+        estadoCarga.style.display = 'block';
+
+        let linksFotos = [];
+        const totalFotos = fotoInput.files.length;
+
+        try {
+            for (let i = 0; i < totalFotos; i++) {
+                document.getElementById('progreso-texto').innerText = `${Math.round((i / totalFotos) * 100)}%`;
+                const urlFoto = await subirAImgBB(fotoInput.files[i]);
+                linksFotos.push(urlFoto);
+            }
+        } catch(error) {
+            alert("Hubo un problema al subir las imágenes. Verifica tu llave de API o conexión.");
+            boton.style.display = 'block';
+            estadoCarga.style.display = 'none';
+            return;
         }
 
-        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: fotosBase64 };
+        // Al guardar URLs de texto cortas en vez de imágenes binarias, el peso disminuye un 99%
+        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: linksFotos };
         const datosString = JSON.stringify(datosRecuerdo);
         
-        // Comprimimos la cadena usando LZ-String (Reduce el tamaño en más de un 70%)
-        const datosComprimidos = LZString.compressToEncodedURIComponent(datosString);
+        // Codificamos de forma segura
+        const datosBase64 = btoa(encodeURIComponent(datosString));
         
-        // Tu dirección real ya enlazada correctamente
-        const urlVisor = "https://github.io" + datosComprimidos;
+        const urlVisor = "https://github.io" + datosBase64;
 
         document.getElementById("qrcode").innerHTML = "";
 
-        // Al estar comprimido el texto, QRCode.js creará el código al instante sin errores
         new QRCode(document.getElementById("qrcode"), {
             text: urlVisor,
             width: 260,
             height: 260,
             colorDark : "#0f2b26",
             colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.L
+            correctLevel : QRCode.CorrectLevel.M
         });
 
+        estadoCarga.style.display = 'none';
         document.getElementById('formulario-section').style.display = 'none';
         document.getElementById('resultado').style.display = 'block';
     }
