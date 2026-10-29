@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEXONT · Carga tu Recuerdo</title>
+    <!-- Librería local para generar códigos QR -->
+    <script src="https://cloudflare.com"></script>
+    <style>
+        :root {
+            --verde-profundo: #0f2b26;
+            --ocre-calido: #c27d56;
+            --fondo-claro: #f4f7f6;
+            --texto-oscuro: #2c3e50;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: var(--fondo-claro); color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 500px; width: 100%; }
+        header { text-align: center; margin-bottom: 25px; }
+        .logo-texto { font-size: 26px; font-weight: 800; letter-spacing: 5px; color: var(--verde-profundo); margin: 0; }
+        .logo-texto span { color: var(--ocre-calido); }
+        .slogan { font-size: 9px; letter-spacing: 3px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px; }
+        label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: var(--texto-oscuro); font-size: 14px; }
+        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; color: #2f3640; }
+        textarea { height: 110px; resize: none; font-family: inherit; }
+        .info-nota { font-size: 12px; color: #7f8c8d; margin-top: 4px; display: block; }
+        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: background 0.3s; box-shadow: 0 4px 10px rgba(194,125,86,0.2); }
+        button:hover { background-color: #aa6843; }
+        #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
+        #qrcode { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #e1b12c; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .success-text { color: var(--verde-profundo); font-weight: bold; font-size: 20px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="logo-texto">VEX<span>O</span>NT</div>
+        <div class="slogan">Encuentra tu eje</div>
+    </header>
+
+    <div id="formulario-section">
+        <p style="font-size:13px; color:#7f8c8d; text-align:center; margin-bottom: 20px;">Tus fotos y música se encriptan de forma privada en tu celular. Nosotros nunca tendremos acceso a ellas.</p>
+        
+        <label for="titulo">Título de la portada</label>
+        <input type="text" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa">
+
+        <label for="fecha">Fecha o Lugar destacado</label>
+        <input type="text" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
+
+        <label for="historia">Dedicatoria o Historia del recuerdo</label>
+        <textarea id="historia" placeholder="Escribe aquí las palabras o anécdotas que acompañarán este cuadro..."></textarea>
+
+        <label for="musica">Enlace de Audio Directo (Opcional)</label>
+        <input type="text" id="musica" placeholder="Ej: Enlace directo a un archivo MP3 de tu canción">
+        <span class="info-nota">Asegúrate de que sea un enlace directo que termine en .mp3 para que suene automáticamente de fondo.</span>
+
+        <label for="fotos">Selecciona tus fotos (Soporta hasta 50 imágenes)</label>
+        <input type="file" id="fotos" accept="image/*" multiple>
+
+        <button onclick="generarRecuerdo()">✨ CREAR MI CÓDIGO QR</button>
+    </div>
+
+    <div id="resultado">
+        <p class="success-text">¡Tu Portada Interactiva está lista!</p>
+        <p style="font-size: 14px; color:#555; line-height: 1.5;">Haz una captura de pantalla de este código QR o descárgalo, y envíanoslo para grabarlo en la madera de tu cuadro CNC.</p>
+        
+        <div id="qrcode"></div>
+        
+        <p style="font-size: 11px; color:#95a5a6; margin-top: 20px; line-height: 1.4;">🔒 Privacidad Garantizada: Toda tu galería viaja comprimida dentro del mismo código. El artesano no puede ver tus fotos, solo procesará el patrón vectorial para el tallado físico.</p>
+    </div>
+</div>
+
+<script>
+    async function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    async function generarRecuerdo() {
+        const titulo = document.getElementById('titulo').value.trim();
+        const fecha = document.getElementById('fecha').value.trim();
+        const historia = document.getElementById('historia').value.trim();
+        const musica = document.getElementById('musica').value.trim();
+        const fotoInput = document.getElementById('fotos');
+
+        if(!titulo || !historia) {
+            alert('Por favor, completa al menos el título y la dedicatoria para tu cuadro.');
+            return;
+        }
+
+        let fotosBase64 = [];
+        // Procesamos todas las fotos cargadas localmente
+        for (let i = 0; i < fotoInput.files.length; i++) {
+            const base64 = await fileToBase64(fotoInput.files[i]);
+            fotosBase64.push(base64);
+        }
+
+        // Estructura optimizada para acortar la URL
+        const datosRecuerdo = {
+            t: titulo,
+            f: fecha,
+            h: historia,
+            m: musica,
+            i: fotosBase64
+        };
+
+        const datosString = JSON.stringify(datosRecuerdo);
+        
+        // REEMPLAZAR ESTA DIRECCIÓN POR TU ENLACE REAL DE GITHUB PAGES EN EL PASO 6
+        const urlVisor = "https://github.io" + encodeURIComponent(btoa(unescape(encodeURIComponent(datosString))));
+
+        // Limpiamos códigos QR anteriores
+        document.getElementById("qrcode").innerHTML = "";
+
+        // Generamos el QR final en la pantalla del usuario
+        new QRCode(document.getElementById("qrcode"), {
+            text: urlVisor,
+            width: 260,
+            height: 260,
+            colorDark : "#0f2b26",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.L // Nivel L para compactar la cadena larga de datos
+        });
+
+        // Transición visual
+        document.getElementById('formulario-section').style.display = 'none';
+        document.getElementById('resultado').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+</script>
+
+</body>
+</html>
