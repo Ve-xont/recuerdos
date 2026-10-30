@@ -50,7 +50,7 @@
     <div id="resultado">
         <div class="success-banner">¡Datos de Portada Procesados!</div>
         <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia ha sido empaquetada. Para finalizar, se abrirá tu correo electrónico para enviarnos el texto estructurado junto con tus fotografías de forma 100% privada.</p>
-        <p style="font-size: 12px; color:#777;">Si el gestor no se abre automáticamente, asegúrate de adjuntar las fotos elegidas en el mensaje.</p>
+        <p style="font-size: 12px; color:#777;">Asegúrate de adjuntar las fotos elegidas en el mensaje antes de presionar enviar.</p>
     </div>
 </div>
 
@@ -67,10 +67,16 @@
             return;
         }
 
-        // ⚠️ COLOCA AQUÍ TU CORREO ELECTRÓNICO DONDE QUIERES RECIBIR LOS PEDIDOS
-        const tuEmailTrabajo = "encuentratuejevexont@gmail.com";
+        // ⚠️ COLOCA AQUÍ TU CORREO ELECTRÓNICO REAL DONDE QUIERES RECIBIR LOS EMAILS
+        const tuEmailTrabajo = "tu-correo-aqui@gmail.com";
 
         const asunto = "NUEVO PEDIDO DE CUADRO QR VEXONT: " + titulo;
+
+        // Generamos el Código de Pedido encriptado basándonos en los textos ingresados por el cliente
+        // Como las fotos las adjunta en el correo, guardamos temporalmente el arreglo vacío en la estructura
+        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: [] };
+        const datosString = JSON.stringify(datosRecuerdo);
+        const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
         
         let cuerpoMensaje = "¡Hola VEXONT! Aquí tienes los datos para armar mi portada rústica:\n\n";
         cuerpoMensaje += "========================================\n";
@@ -80,16 +86,17 @@
         cuerpoMensaje += "========================================\n\n";
         cuerpoMensaje += "✍️ HISTORIA / DEDICATORIA:\n" + historia + "\n\n";
         cuerpoMensaje += "========================================\n";
+        cuerpoMensaje += "🔑 CÓDIGO DE PEDIDO PRIVADO (Para generar el QR en tu taller):\n";
+        cuerpoMensaje += codigoPedidoSeguro + "\n";
+        cuerpoMensaje += "========================================\n\n";
         cuerpoMensaje += "📎 Adjunto en este correo las " + fotoInput.files.length + " fotos seleccionadas para mi collage.";
 
-        // Usamos el protocolo mailto universal nativo, libre de bloqueos e infalible
+        // Protocolo mailto universal sin bloqueos
         const mailtoUrl = "mailto:" + tuEmailTrabajo + "?subject=" + encodeURIComponent(asunto) + "&body=" + encodeURIComponent(cuerpoMensaje);
 
-        // Ocultamos el formulario y mostramos el banner elegante de éxito
         document.getElementById('formulario-section').style.display = 'none';
         document.getElementById('resultado').style.display = 'block';
 
-        // Disparamos la apertura del gestor de correo nativo del celular (Gmail, Outlook o Correo iOS)
         window.location.href = mailtoUrl;
     }
 </script>
