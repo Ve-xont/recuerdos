@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VEXONT · Carga tu Recuerdo</title>
-    <!-- Incluimos una librería local que dibuja el QR usando el celular del cliente -->
-    <script src="https://cloudflare.com"></script>
+    <title>VEXONT · Galería Expandida</title>
     <style>
         :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--fondo-claro); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
@@ -19,8 +17,9 @@
         textarea { height: 110px; resize: none; }
         button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        #qrcode-canvas { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; max-width: 100%; }
+        .success-banner { background-color: #ebfbf2; color: #1e7e34; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; border: 1px solid #c3e6cb; }
         #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
+        .codigo-box { background: #f1f2f6; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 11px; word-break: break-all; margin-top: 10px; border: 1px dashed #7f8c8d; text-align: left; }
     </style>
 </head>
 <body>
@@ -31,115 +30,88 @@
         <div class="slogan">Encuentra tu eje</div>
     </header>
 
-    <div id="formulario-section">
+    <!-- Formulario nativo preparado para procesar archivos masivos hacia el servidor de Web3Forms -->
+    <form id="form-grande" method="POST" enctype="multipart/form-data">
+        
+        <!-- Pega aquí tu clave de acceso recibida por email -->
+        <input type="hidden" name="access_key" value="a44f584f-aea0-4438-a75c-0715d4a19f85">
+        
+        <!-- Campo oculto para mandar el código de pedido estructurado -->
+        <input type="hidden" name="Código de Configuración" id="codigo-oculto">
+
         <label for="titulo">Título de la portada</label>
-        <input type="text" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa">
+        <input type="text" name="Título del Recuerdo" id="titulo" placeholder="Ej: Aniversario de los Abuelos" required>
 
         <label for="fecha">Fecha o Lugar destacado</label>
-        <input type="text" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
+        <input type="text" name="Fecha o Lugar" id="fecha" placeholder="Ej: Mendoza · Año 1976">
 
         <label for="historia">Dedicatoria o Historia del recuerdo</label>
-        <textarea id="historia" placeholder="Escribe aquí las palabras o anécdotas..."></textarea>
+        <textarea name="Historia o Dedicatoria" id="historia" placeholder="Escribe la historia completa aquí..." required></textarea>
 
-        <label for="musica">Enlace de Audio Directo .mp3 (Opcional)</label>
-        <input type="text" id="musica" placeholder="Ej: https://tusitio.com">
+        <label for="musica">Enlace Musical Opcional (Spotify / YouTube)</label>
+        <input type="text" name="Enlace de Música" id="musica" placeholder="Ej: https://spotify.com...">
 
-        <label for="fotos">Selecciona tus fotos (Se procesan de forma privada)</label>
-        <input type="file" id="fotos" accept="image/*" multiple>
+        <label for="fotos">Selecciona tus fotos (¡Admite hasta 50 imágenes!)</label>
+        <input type="file" name="Fotos Adjuntas[]" id="fotos" accept="image/*" multiple required>
 
-        <button onclick="generarRecuerdoPrivado()">✨ CREAR MI CÓDIGO QR PRIVADO</button>
-        <div id="estado-carga">⏳ Encriptando recuerdos de forma 100% confidencial... <span id="progreso-texto">0%</span></div>
-    </div>
+        <button type="submit">✨ COMPLETAR MI GRAN ÁLBUM</button>
+        <div id="estado-carga">⏳ Procesando y empaquetando tus 50 imágenes... por favor no cierres la ventana.</div>
+    </form>
 
     <div id="resultado">
-        <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">🔒 ¡Tu Portada Privada está Lista!</p>
-        <p style="font-size: 14px; color:#555; margin-top: 10px;">Tus fotografías e historia han sido comprimidas directamente dentro de este código QR. El artesano no tiene acceso a tus imágenes, solo tallará este patrón en tu cuadro de madera.</p>
-        
-        <!-- Aquí se dibuja el QR nativo sin usar servidores externos -->
-        <canvas id="qrcode-canvas"></canvas>
-        
-        <p style="font-size: 12px; color:#777; margin-top: 15px;">Haz una captura de pantalla de este código QR y envíanosla por WhatsApp para proceder al grabado CNC.</p>
+        <div class="success-banner">¡Álbum Familiar Recibido con Éxito!</div>
+        <p style="font-size: 14px; color:#555; line-height: 1.5;">Tus fotografías y textos han llegado de forma segura a nuestro taller.</p>
+        <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Este es tu código de pedido único de respaldo:</p>
+        <div class="codigo-box" id="lbl-codigo"></div>
+        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Nos comunicaremos contigo por WhatsApp para proceder al diseño y tallado CNC de tu cuadro.</p>
     </div>
 </div>
 
 <script>
-    // Comprime y reduce el peso de cada foto para que entre con calzador en el QR rústico
-    async function optimizarImagenLocal(file) {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (event) => {
-                const img = new Image();
-                img.src = event.target.result;
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 250; // Tamaño óptimo miniatura para caber dentro del QR físico
-                    let width = img.width;
-                    let height = img.height;
+    const form = document.getElementById('form-grande');
+    const boton = document.querySelector('button');
+    const estadoCarga = document.getElementById('estado-carga');
 
-                    if (width > MAX_WIDTH) {
-                        height *= MAX_WIDTH / width;
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.4)); // Calidad rústica al 40% para maximizar espacio
-                };
-            };
-        });
-    }
-
-    async function generarRecuerdoPrivado() {
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         const titulo = document.getElementById('titulo').value.trim();
         const fecha = document.getElementById('fecha').value.trim();
         const historia = document.getElementById('historia').value.trim();
         const musica = document.getElementById('musica').value.trim();
-        const fotoInput = document.getElementById('fotos');
 
-        if(!titulo || !historia) {
-            alert('Por favor, completa el título y la dedicatoria.');
-            return;
-        }
-
-        const boton = document.querySelector('button');
-        const estadoCarga = document.getElementById('estado-carga');
         if(boton) boton.style.display = 'none';
         if(estadoCarga) estadoCarga.style.display = 'block';
 
-        let fotosBase64 = [];
-        const totalFotos = fotoInput.files.length;
-
-        // Máximo 4-5 fotos recomendadas para este método sin servidor para no desbordar el QR físico
-        for (let i = 0; i < totalFotos; i++) {
-            const porc = Math.round((i / totalFotos) * 100);
-            document.getElementById('progreso-texto').innerText = porc + "%";
-            const fotoComprimida = await optimizarImagenLocal(fotoInput.files[i]);
-            fotosBase64.push(fotoComprimida);
-        }
-
-        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: fotosBase64 };
+        // Generamos la cadena cifrada basándonos en los textos para tu visor
+        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: [] };
         const datosString = JSON.stringify(datosRecuerdo);
+        const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
         
-        // Empaquetamos todo en Base64 plano
-        const datosBase64 = btoa(encodeURIComponent(datosString));
-        
-        // La URL final que leerá el celular apunta directamente a tu visor
-        const urlVisor = "https://github.io" + datosBase64;
+        // Inyectamos el código en el formulario antes de transmitirlo
+        document.getElementById('codigo-oculto').value = codigoPedidoSeguro;
 
-        // Dibujamos el QR usando el elemento Canvas nativo del celular del cliente
-        new QRious({
-            element: document.getElementById('qrcode-canvas'),
-            value: urlVisor,
-            size: 280,
-            level: 'L' // Nivel de corrección bajo para permitir la cadena larga de texto local
+        const formData = new FormData(form);
+
+        fetch('https://web3forms.com', {
+            method: 'POST',
+            body: formData
+        })
+        .then(async (response) => {
+            if (response.status == 200) {
+                document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
+                form.style.display = 'none';
+                document.getElementById('resultado').style.display = 'block';
+            } else {
+                throw new Error("Error en servidor");
+            }
+        })
+        .catch(error => {
+            alert("Hubo un inconveniente con el envío. Asegúrate de que las fotos no superen los límites de tamaño totales.");
+            if(boton) boton.style.display = 'block';
+            if(estadoCarga) estadoCarga.style.display = 'none';
         });
-
-        if(estadoCarga) estadoCarga.style.display = 'none';
-        document.getElementById('formulario-section').style.display = 'none';
-        document.getElementById('resultado').style.display = 'block';
-    }
+    });
 </script>
 </body>
 </html>
