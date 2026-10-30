@@ -99,13 +99,6 @@
             margin-bottom: 15px; 
             border: 1px solid #c3e6cb; 
         }
-        #estado-carga {
-            display: none;
-            text-align: center;
-            color: var(--ocre-calido);
-            font-weight: bold;
-            margin-top: 15px;
-        }
         .codigo-box {
             background: #f1f2f6;
             padding: 12px;
@@ -127,81 +120,70 @@
         <div class="slogan">Encuentra tu eje</div>
     </header>
 
-    <form id="form-grande">
-        <!-- Clave de Acceso Web3Forms -->
-        <input type="hidden" name="access_key" value="a44f584f-aea0-4438-a75c-0715d4a19f85">
-        <input type="hidden" name="Codigo_Configuracion" id="codigo-oculto">
-
+    <div id="formulario-section">
         <label for="titulo">Título de la portada</label>
-        <input type="text" name="Titulo" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa" required>
+        <input type="text" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa" required>
 
         <label for="fecha">Fecha o Lugar destacado</label>
-        <input type="text" name="Fecha_Lugar" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
+        <input type="text" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
 
         <label for="historia">Dedicatoria o Historia del recuerdo</label>
-        <textarea name="Historia_Dedicatoria" id="historia" placeholder="Escribe aquí las palabras..." required></textarea>
+        <textarea id="historia" placeholder="Escribe aquí las palabras..." required></textarea>
 
         <label for="musica">Enlace Musical Opcional (Spotify / YouTube)</label>
-        <input type="text" name="Enlace_Musica" id="musica" placeholder="Ej: https://spotify.com...">
+        <input type="text" id="musica" placeholder="Ej: https://spotify.com...">
 
-        <button type="submit">✨ COMPLETAR MI PEDIDO</button>
-        <div id="estado-carga">⏳ Procesando y enviando los datos del recuerdo... por favor no cierres la ventana.</div>
-    </form>
+        <button onclick="enviarPorWhatsApp()">✨ COMPLETAR MI PEDIDO</button>
+    </div>
 
     <div id="resultado">
-        <div class="success-banner">¡Datos de Portada Recibidos!</div>
-        <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia ha sido transmitida con éxito al taller de Vexont.</p>
-        <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Este es tu código de pedido único de respaldo:</p>
+        <div class="success-banner">¡Datos Procesados Correctamente!</div>
+        <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia ha sido convertida en código de forma privada.</p>
+        <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Tu código de pedido único de respaldo:</p>
         <div class="codigo-box" id="lbl-codigo"></div>
-        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">¡Listo! El texto ya está guardado. Ahora envíanos tus fotos directamente por WhatsApp para proceder al armado de tu collage.</p>
+        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Por favor, adjunta tus fotos en el chat de WhatsApp que se acaba de abrir para finalizar el diseño.</p>
     </div>
 </div>
 
 <script>
-    const form = document.getElementById('form-grande');
-    const boton = document.querySelector('button');
-    const estadoCarga = document.getElementById('estado-carga');
-
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
+    function enviarPorWhatsApp() {
         const titulo = document.getElementById('titulo').value.trim();
         const fecha = document.getElementById('fecha').value.trim();
         const historia = document.getElementById('historia').value.trim();
         const musica = document.getElementById('musica').value.trim();
 
-        if(boton) boton.style.display = 'none';
-        if(estadoCarga) estadoCarga.style.display = 'block';
+        if(!titulo || !historia) {
+            alert('Por favor, completa el título y la historia de tu recuerdo.');
+            return;
+        }
 
-        // Estructuración del string cifrado para el QR
+        // ⚠️ COLOCA AQUÍ TU NÚMERO DE WHATSAPP (Solo números, con código de país, sin el +)
+        const tuTelefonoWhatsApp = "5491132061841"; 
+
+        // Estructuración del string encriptado para el lector QR de tu taller
         const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica };
         const datosString = JSON.stringify(datosRecuerdo);
         const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
 
-        document.getElementById('codigo-oculto').value = codigoPedidoSeguro;
+        // Construcción del mensaje preformateado para tu chat
+        let mensaje = "¡Hola VEXONT! Aquí tienes los datos para mi cuadro QR:\n\n";
+        mensaje += "📌 *TÍTULO:* " + titulo + "\n";
+        mensaje += "📆 *FECHA / LUGAR:* " + (fecha ? fecha : "No especificado") + "\n";
+        mensaje += "🎵 *MÚSICA:* " + (musica ? musica : "No seleccionada") + "\n";
+        mensaje += "✍️ *HISTORIA:* " + historia + "\n\n";
+        mensaje += "🔑 *CÓDIGO DE PORTADA PRIVADO:*\n`" + codigoPedidoSeguro + "`\n\n";
+        mensaje += "📷 _Te adjunto a continuación las fotos para el collage._";
 
-        const formData = new FormData(form);
+        const whatsappUrl = "https://wa.me" + tuTelefonoWhatsApp + "?text=" + encodeURIComponent(mensaje);
 
-        // Envío directo a la API sin archivos pesados
-        fetch('https://web3forms.com', {
-            method: 'POST',
-            body: formData
-        })
-        .then(async (response) => {
-            if (response.status === 200) {
-                document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
-                form.style.display = 'none';
-                document.getElementById('resultado').style.display = 'block';
-            } else {
-                throw new Error('Error en el servidor');
-            }
-        })
-        .catch(error => {
-            alert('Ocurrió un error al enviar el formulario. Verifica tu conexión.');
-            if(boton) boton.style.display = 'block';
-            if(estadoCarga) estadoCarga.style.display = 'none';
-        });
-    });
+        // Cambiar la pantalla en la web para mostrar la confirmación y el código de barras/letras
+        document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
+        document.getElementById('formulario-section').style.display = 'none';
+        document.getElementById('resultado').style.display = 'block';
+
+        // Abrir WhatsApp de manera nativa e inmediata sin intermediarios
+        window.open(whatsappUrl, '_blank');
+    }
 </script>
 </body>
 </html>
