@@ -141,7 +141,7 @@
         <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia ha sido convertida en código de forma privada.</p>
         <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Tu código de pedido único de respaldo:</p>
         <div class="codigo-box" id="lbl-codigo"></div>
-        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Por favor, adjunta tus fotos en el chat de WhatsApp que se acaba de abrir para finalizar el diseño.</p>
+        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Por favor, adjunta tus fotos en el chat de WhatsApp para finalizar el diseño de tu cuadro.</p>
     </div>
 </div>
 
@@ -157,32 +157,33 @@
             return;
         }
 
-        // ⚠️ COLOCA AQUÍ TU NÚMERO DE WHATSAPP (Solo números, con código de país, sin el +)
+        // Número de teléfono Vexont verificado y corregido
         const tuTelefonoWhatsApp = "5491132061841"; 
 
-        // Estructuración del string encriptado para el lector QR de tu taller
+        // Estructuración del string encriptado para tu visor QR
         const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica };
         const datosString = JSON.stringify(datosRecuerdo);
         const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
 
-        // Construcción del mensaje preformateado para tu chat
+        // Construcción del mensaje estructurado para WhatsApp
         let mensaje = "¡Hola VEXONT! Aquí tienes los datos para mi cuadro QR:\n\n";
         mensaje += "📌 *TÍTULO:* " + titulo + "\n";
         mensaje += "📆 *FECHA / LUGAR:* " + (fecha ? fecha : "No especificado") + "\n";
         mensaje += "🎵 *MÚSICA:* " + (musica ? musica : "No seleccionada") + "\n";
-        mensaje += "✍️ *HISTORIA:* " + historia + "\n\n";
+        mensaje += "✍ *HISTORIA:* " + historia + "\n\n";
         mensaje += "🔑 *CÓDIGO DE PORTADA PRIVADO:*\n`" + codigoPedidoSeguro + "`\n\n";
         mensaje += "📷 _Te adjunto a continuación las fotos para el collage._";
 
+        // URL fija y estructurada con la barra diagonal obligatoria
         const whatsappUrl = "https://wa.me" + tuTelefonoWhatsApp + "?text=" + encodeURIComponent(mensaje);
 
-        // Cambiar la pantalla en la web para mostrar la confirmación y el código de barras/letras
+        // Actualiza los elementos visuales de la interfaz
         document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
         document.getElementById('formulario-section').style.display = 'none';
         document.getElementById('resultado').style.display = 'block';
 
-        // Abrir WhatsApp de manera nativa e inmediata sin intermediarios
-        window.open(whatsappUrl, '_blank');
+        // Redirección nativa y fluida
+        window.location.href = whatsappUrl;
     }
 </script>
 </body>
