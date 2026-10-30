@@ -3,23 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VEXONT · Galería Expandida</title>
+    <title>VEXONT · Carga tu Recuerdo</title>
     <style>
-        :root { --verde-profundo: #0f2b26; --ocre-calido: #c27d56; --fondo-claro: #f4f7f6; }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background-color: var(--fondo-claro); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 500px; width: 100%; }
-        header { text-align: center; margin-bottom: 25px; }
-        .logo-texto { font-size: 26px; font-weight: 800; letter-spacing: 5px; color: var(--verde-profundo); margin: 0; }
-        .logo-texto span { color: var(--ocre-calido); }
-        .slogan { font-size: 9px; letter-spacing: 3px; color: #7f8c8d; text-transform: uppercase; margin-top: 4px; }
-        label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: #2c3e50; font-size: 14px; }
-        input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; }
-        textarea { height: 110px; resize: none; }
-        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; }
-        #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        .success-banner { background-color: #ebfbf2; color: #1e7e34; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; border: 1px solid #c3e6cb; }
-        #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
-        .codigo-box { background: #f1f2f6; padding: 12px; border-radius: 8px; font-family: monospace; font-size: 11px; word-break: break-all; margin-top: 10px; border: 1px dashed #7f8c8d; text-align: left; }
+        :root { 
+            --verde-profundo: #0f2b26; 
+            --ocre-calido: #c27d56; 
+            --fondo-claro: #f4f7f6; 
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background-color: var(--fondo-claro); 
+            margin: 0; 
+            padding: 20px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            max-width: 500px; 
+            width: 100%; 
+        }
+        header { 
+            text-align: center; 
+            margin-bottom: 25px; 
+        }
+        .logo-texto { 
+            font-size: 26px; 
+            font-weight: 800; 
+            letter-spacing: 5px; 
+            color: var(--verde-profundo); 
+            margin: 0; 
+        }
+        .logo-texto span { 
+            color: var(--ocre-calido); 
+        }
+        .slogan { 
+            font-size: 9px; 
+            letter-spacing: 3px; 
+            color: #7f8c8d; 
+            text-transform: uppercase; 
+            margin-top: 4px; 
+        }
+        label { 
+            font-weight: bold; 
+            display: block; 
+            margin-top: 18px; 
+            margin-bottom: 6px; 
+            color: #2c3e50; 
+            font-size: 14px; 
+        }
+        input[type="text"], textarea, input[type="file"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #dcdde1; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 15px; 
+            background-color: #f8f9fa; 
+        }
+        textarea { 
+            height: 110px; 
+            resize: none; 
+        }
+        button { 
+            background-color: var(--ocre-calido); 
+            color: white; 
+            border: none; 
+            padding: 14px; 
+            width: 100%; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-top: 25px; 
+            width: 100%; 
+        }
+        #resultado { 
+            display: none; 
+            margin-top: 30px; 
+            text-align: center; 
+            border-top: 2px dashed #dcdde1; 
+            padding-top: 25px; 
+        }
+        .success-banner { 
+            background-color: #ebfbf2; 
+            color: #1e7e34; 
+            padding: 15px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            border: 1px solid #c3e6cb; 
+        }
+        #estado-carga {
+            display: none;
+            text-align: center;
+            color: var(--ocre-calido);
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .codigo-box {
+            background: #f1f2f6;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            word-break: break-all;
+            margin-top: 10px;
+            border: 1px dashed #7f8c8d;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -30,40 +127,36 @@
         <div class="slogan">Encuentra tu eje</div>
     </header>
 
-    <!-- Formulario nativo preparado para procesar archivos masivos hacia el servidor de Web3Forms -->
-    <form id="form-grande" method="POST" enctype="multipart/form-data">
+    <!-- ACCIÓN CONECTADA AL SERVIDOR MODERNO DE FORMINIT -->
+    <form id="form-grande" action="https://app.forminit.com/forms/kpe2bwni0la" method="POST" enctype="multipart/form-data">
         
-        <!-- Pega aquí tu clave de acceso recibida por email -->
-        <input type="hidden" name="access_key" value="a44f584f-aea0-4438-a75c-0715d4a19f85">
-        
-        <!-- Campo oculto para mandar el código de pedido estructurado -->
         <input type="hidden" name="Código de Configuración" id="codigo-oculto">
 
         <label for="titulo">Título de la portada</label>
-        <input type="text" name="Título del Recuerdo" id="titulo" placeholder="Ej: Aniversario de los Abuelos" required>
+        <input type="text" name="Título del Recuerdo" id="titulo" placeholder="Ej: Nuestras vacaciones en la playa" required>
 
         <label for="fecha">Fecha o Lugar destacado</label>
-        <input type="text" name="Fecha o Lugar" id="fecha" placeholder="Ej: Mendoza · Año 1976">
+        <input type="text" name="Fecha o Lugar" id="fecha" placeholder="Ej: Mar del Plata · Verano 2024">
 
         <label for="historia">Dedicatoria o Historia del recuerdo</label>
-        <textarea name="Historia o Dedicatoria" id="historia" placeholder="Escribe la historia completa aquí..." required></textarea>
+        <textarea name="Historia o Dedicatoria" id="historia" placeholder="Escribe aquí las palabras o anécdotas que acompañarán este cuadro..." required></textarea>
 
         <label for="musica">Enlace Musical Opcional (Spotify / YouTube)</label>
         <input type="text" name="Enlace de Música" id="musica" placeholder="Ej: https://spotify.com...">
 
-        <label for="fotos">Selecciona tus fotos (¡Admite hasta 50 imágenes!)</label>
-        <input type="file" name="Fotos Adjuntas[]" id="fotos" accept="image/*" multiple required>
+        <label for="fotos">Selecciona tus fotos (¡Soporta hasta 25MB totales!)</label>
+        <input type="file" name="Fotos Adjuntas" id="fotos" accept="image/*" multiple required>
 
-        <button type="submit">✨ COMPLETAR MI GRAN ÁLBUM</button>
-        <div id="estado-carga">⏳ Procesando y empaquetando tus 50 imágenes... por favor no cierres la ventana.</div>
+        <button type="submit">✨ COMPLETAR MI PEDIDO</button>
+        <div id="estado-carga">⏳ Procesando y enviando tus imágenes... por favor no cierres la ventana.</div>
     </form>
 
     <div id="resultado">
-        <div class="success-banner">¡Álbum Familiar Recibido con Éxito!</div>
-        <p style="font-size: 14px; color:#555; line-height: 1.5;">Tus fotografías y textos han llegado de forma segura a nuestro taller.</p>
+        <div class="success-banner">¡Datos de Portada Recibidos!</div>
+        <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia y tus imágenes han sido transmitidas de forma segura a nuestro taller.</p>
         <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Este es tu código de pedido único de respaldo:</p>
         <div class="codigo-box" id="lbl-codigo"></div>
-        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Nos comunicaremos contigo por WhatsApp para proceder al diseño y tallado CNC de tu cuadro.</p>
+        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Nos comunicaremos contigo por WhatsApp para proceder al diseño de tu cuadro.</p>
     </div>
 </div>
 
@@ -72,6 +165,7 @@
     const boton = document.querySelector('button');
     const estadoCarga = document.getElementById('estado-carga');
 
+    // Manejo del éxito del formulario mediante AJAX continuo para evitar redirecciones raras
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -83,31 +177,32 @@
         if(boton) boton.style.display = 'none';
         if(estadoCarga) estadoCarga.style.display = 'block';
 
-        // Generamos la cadena cifrada basándonos en los textos para tu visor
-        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica, i: [] };
+        // Estructura limpia para codificar tu QR encriptado
+        const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica };
         const datosString = JSON.stringify(datosRecuerdo);
         const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
-        
-        // Inyectamos el código en el formulario antes de transmitirlo
+
         document.getElementById('codigo-oculto').value = codigoPedidoSeguro;
 
+        // Enviamos todo mediante un fetch de fondo seguro
         const formData = new FormData(form);
-
-        fetch('https://web3forms.com', {
+        
+        fetch(form.action, {
             method: 'POST',
-            body: formData
+            body: formData,
+            headers: { 'Accept': 'application/json' }
         })
-        .then(async (response) => {
-            if (response.status == 200) {
+        .then(response => {
+            if (response.ok) {
                 document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
                 form.style.display = 'none';
                 document.getElementById('resultado').style.display = 'block';
             } else {
-                throw new Error("Error en servidor");
+                throw new Error('Fallo en el servidor');
             }
         })
         .catch(error => {
-            alert("Hubo un inconveniente con el envío. Asegúrate de que las fotos no superen los límites de tamaño totales.");
+            alert('Hubo un inconveniente con el envío masivo. Asegúrate de que las fotos no pesen demasiado.');
             if(boton) boton.style.display = 'block';
             if(estadoCarga) estadoCarga.style.display = 'none';
         });
