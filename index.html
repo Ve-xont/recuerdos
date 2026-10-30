@@ -127,7 +127,7 @@
         <div class="slogan">Encuentra tu eje</div>
     </header>
 
-    <!-- ACCIÓN CONECTADA AL SERVIDOR MODERNO DE FORMINIT -->
+    <!-- ENVÍO DIRECTO SIN BLOQUEOS DE NAVEGADOR -->
     <form id="form-grande" action="https://app.forminit.com/forms/kpe2bwni0la" method="POST" enctype="multipart/form-data">
         
         <input type="hidden" name="Código de Configuración" id="codigo-oculto">
@@ -165,8 +165,16 @@
     const boton = document.querySelector('button');
     const estadoCarga = document.getElementById('estado-carga');
 
-    // Manejo del éxito del formulario mediante AJAX continuo para evitar redirecciones raras
+    // Revisar si venimos de un redireccionamiento exitoso tras enviar
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('status') === 'success') {
+        form.style.display = 'none';
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('lbl-codigo').innerText = localStorage.getItem('ultimo_codigo_vexont') || 'Generando...';
+    }
+
     form.addEventListener('submit', function(e) {
+        // Detenemos un microsegundo para procesar el código QR encriptado
         e.preventDefault();
         
         const titulo = document.getElementById('titulo').value.trim();
@@ -183,29 +191,10 @@
         const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
 
         document.getElementById('codigo-oculto').value = codigoPedidoSeguro;
+        localStorage.setItem('ultimo_codigo_vexont', codigoPedidoSeguro);
 
-        // Enviamos todo mediante un fetch de fondo seguro
-        const formData = new FormData(form);
-        
-        fetch(form.action, {
-            method: 'POST',
-            body: formData,
-            headers: { 'Accept': 'application/json' }
-        })
-        .then(response => {
-            if (response.ok) {
-                document.getElementById('lbl-codigo').innerText = codigoPedidoSeguro;
-                form.style.display = 'none';
-                document.getElementById('resultado').style.display = 'block';
-            } else {
-                throw new Error('Fallo en el servidor');
-            }
-        })
-        .catch(error => {
-            alert('Hubo un inconveniente con el envío masivo. Asegúrate de que las fotos no pesen demasiado.');
-            if(boton) boton.style.display = 'block';
-            if(estadoCarga) estadoCarga.style.display = 'none';
-        });
+        // Disparamos el envío nativo sin JavaScript de fondo para evitar problemas de CORS
+        form.submit();
     });
 </script>
 </body>
