@@ -47,7 +47,7 @@
         <input type="file" id="fotos" accept="image/*" multiple>
 
         <button onclick="generarRecuerdo()">✨ COMPLETAR MI PEDIDO</button>
-        <div id="estado-carga">⏳ Procesando y subiendo tus recuerdos privados... <span id="progreso-texto">0%</span></div>
+        <div id="estado-carga">⏳ Reduciendo y subiendo imágenes... <span id="progreso-texto">0%</span></div>
     </div>
 
     <div id="resultado">
@@ -130,7 +130,7 @@
                 linksFotos.push(urlFoto);
             }
         } catch(error) {
-            alert("Hubo un inconveniente. Intenta de nuevo.");
+            alert("Hubo un inconveniente con la carga de datos. Revisa la extensión de tus imágenes.");
             if(boton) boton.style.display = 'block';
             if(estadoCarga) estadoCarga.style.display = 'none';
             return;
@@ -140,15 +140,11 @@
         const datosString = JSON.stringify(datosRecuerdo);
         const datosBase64 = btoa(encodeURIComponent(datosString));
         
-        // El texto que le daremos al cliente contiene la clave cifrada de su visor
-        const codigoFinalParaCliente = datosBase64;
-        
-        document.getElementById('codigo-pedido-txt').innerText = codigoFinalParaCliente;
+        document.getElementById('codigo-pedido-txt').innerText = datosBase64;
 
-        // Configuramos el enlace para que te mande el código directo a tu WhatsApp
-        // REEMPLAZA TU_NUMERO_AQUI por tu celular de trabajo con código de país (Ej: 5491122334455)
-        const tuTelefono = "1132061841"; 
-        const mensajeWhatsApp = `Hola VEXONT! Ya cargué mis fotos de recuerdo. Mi código de pedido privado es:\n\n${codigoFinalParaCliente}`;
+        // CONFIGURA AQUÍ TU NÚMERO CELULAR DE TRABAJO (Con código de país, ejemplo para Argentina: 549...)
+        const tuTelefono = "5491132061841"; 
+        const mensajeWhatsApp = `Hola VEXONT! Ya cargué mis fotos de recuerdo. Mi código de pedido privado es:\n\n${datosBase64}`;
         document.getElementById('lnk-whatsapp').href = "https://wa.me" + tuTelefono + "?text=" + encodeURIComponent(mensajeWhatsApp);
 
         if(estadoCarga) estadoCarga.style.display = 'none';
