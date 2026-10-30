@@ -57,7 +57,7 @@
             color: #2c3e50; 
             font-size: 14px; 
         }
-        input[type="text"], textarea, input[type="file"] { 
+        input[type="text"], textarea { 
             width: 100%; 
             padding: 12px; 
             border: 1px solid #dcdde1; 
@@ -144,20 +144,16 @@
         <label for="musica">Enlace Musical Opcional (Spotify / YouTube)</label>
         <input type="text" name="Enlace_Musica" id="musica" placeholder="Ej: https://spotify.com...">
 
-        <label for="fotos">Selecciona la foto principal de portada</label>
-        <!-- Quitamos la carga múltiple pesada para asegurar el envío en la API gratuita -->
-        <input type="file" name="Foto_Portada" id="fotos" accept="image/*" required>
-
         <button type="submit">✨ COMPLETAR MI PEDIDO</button>
         <div id="estado-carga">⏳ Procesando y enviando los datos del recuerdo... por favor no cierres la ventana.</div>
     </form>
 
     <div id="resultado">
         <div class="success-banner">¡Datos de Portada Recibidos!</div>
-        <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia y tu fotografía principal han sido transmitidas con éxito al taller de Vexont.</p>
+        <p style="font-size: 14px; color:#555; line-height: 1.5; margin-bottom: 20px;">Tu historia ha sido transmitida con éxito al taller de Vexont.</p>
         <p style="font-size: 13px; color:#333; margin-top: 10px; font-weight: bold;">Este es tu código de pedido único de respaldo:</p>
         <div class="codigo-box" id="lbl-codigo"></div>
-        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">Nos comunicaremos contigo por WhatsApp para coordinar el resto del collage.</p>
+        <p style="font-size: 13px; color: var(--ocre-calido); font-weight: bold; margin-top: 15px;">¡Listo! El texto ya está guardado. Ahora envíanos tus fotos directamente por WhatsApp para proceder al armado de tu collage.</p>
     </div>
 </div>
 
@@ -177,7 +173,7 @@
         if(boton) boton.style.display = 'none';
         if(estadoCarga) estadoCarga.style.display = 'block';
 
-        // Estructuración del string cifrado
+        // Estructuración del string cifrado para el QR
         const datosRecuerdo = { t: titulo, f: fecha, h: historia, m: musica };
         const datosString = JSON.stringify(datosRecuerdo);
         const codigoPedidoSeguro = btoa(encodeURIComponent(datosString));
@@ -186,7 +182,7 @@
 
         const formData = new FormData(form);
 
-        // Envío directo a la API de Web3Forms optimizada
+        // Envío directo a la API sin archivos pesados
         fetch('https://web3forms.com', {
             method: 'POST',
             body: formData
@@ -197,11 +193,11 @@
                 form.style.display = 'none';
                 document.getElementById('resultado').style.display = 'block';
             } else {
-                throw new Error('Error en el servidor de envíos');
+                throw new Error('Error en el servidor');
             }
         })
         .catch(error => {
-            alert('Ocurrió un error al enviar el formulario. Verifica los datos.');
+            alert('Ocurrió un error al enviar el formulario. Verifica tu conexión.');
             if(boton) boton.style.display = 'block';
             if(estadoCarga) estadoCarga.style.display = 'none';
         });
