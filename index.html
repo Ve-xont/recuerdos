@@ -15,10 +15,11 @@
         label { font-weight: bold; display: block; margin-top: 18px; margin-bottom: 6px; color: #2c3e50; font-size: 14px; }
         input[type="text"], textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; box-sizing: border-box; font-size: 15px; background-color: #f8f9fa; }
         textarea { height: 110px; resize: none; }
-        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; }
+        button { background-color: var(--ocre-calido); color: white; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; }
         #resultado { display: none; margin-top: 30px; text-align: center; border-top: 2px dashed #dcdde1; padding-top: 25px; }
-        #qrcode-img { display: inline-block; margin-top: 20px; padding: 15px; background: white; border: 1px solid #dcdde1; border-radius: 12px; max-width: 100%; }
+        .codigo-box { background: #f1f2f6; padding: 15px; border-radius: 8px; border: 1px dashed var(--verde-profundo); font-family: monospace; font-size: 12px; word-break: break-all; margin: 15px 0; color: #2f3542; max-height: 120px; overflow-y: auto; text-align: left; }
         #estado-carga { display: none; text-align: center; color: var(--ocre-calido); font-weight: bold; margin-top: 15px; }
+        .btn-whatsapp { display: inline-block; background-color: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 15px; margin-top: 10px; width: 100%; box-sizing: border-box; text-align: center; }
     </style>
 </head>
 <body>
@@ -45,21 +46,23 @@
         <label for="fotos">Selecciona tus fotos (¡Soporta hasta 50 imágenes!)</label>
         <input type="file" id="fotos" accept="image/*" multiple>
 
-        <button onclick="generarRecuerdo()">✨ CREAR MI CÓDIGO QR</button>
-        <div id="estado-carga">⏳ Reduciendo y subiendo imágenes... <span id="progreso-texto">0%</span></div>
+        <button onclick="generarRecuerdo()">✨ COMPLETAR MI PEDIDO</button>
+        <div id="estado-carga">⏳ Procesando y subiendo tus recuerdos privados... <span id="progreso-texto">0%</span></div>
     </div>
 
     <div id="resultado">
-        <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu Portada Interactiva está lista!</p>
-        <p style="font-size: 14px; color:#555;">Envíanos una captura o descarga de este código QR para grabarlo en la madera de tu cuadro CNC.</p>
-        <img id="qrcode-img" src="" alt="Código QR de tu recuerdo">
+        <p style="color: var(--verde-profundo); font-weight: bold; font-size: 20px;">¡Tu álbum privado ha sido encriptado!</p>
+        <p style="font-size: 14px; color:#555; margin-top: 10px;">Para resguardar tu privacidad, las imágenes se han convertido en un código seguro. Envíanos este código para proceder al grabado rústico en tu cuadro de madera.</p>
+        
+        <div class="codigo-box" id="codigo-pedido-txt"></div>
+
+        <a id="lnk-whatsapp" href="#" target="_blank" class="btn-whatsapp">📱 ENVIAR CÓDIGO POR WHATSAPP</a>
     </div>
 </div>
 
 <script>
     const IMGBB_API_KEY = "99aabe6bc3a71ff9d80af0e80f6d38b9";
 
-    // Función inteligente que comprime la imagen antes de transmitirla
     async function procesarYComprimir(file) {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -69,7 +72,7 @@
                 img.src = event.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 600; // Resolución óptima para pantallas de celulares
+                    const MAX_WIDTH = 600;
                     let width = img.width;
                     let height = img.height;
 
@@ -79,14 +82,9 @@
                     }
                     canvas.width = width;
                     canvas.height = height;
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Convertimos a un blob liviano comprimido al 60% de calidad
-                    canvas.toBlob((blob) => {
-                        resolve(blob);
-                    }, 'image/jpeg', 0.6);
+                    canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.6);
                 };
             };
         });
@@ -95,18 +93,9 @@
     async function subirAImgBB(blobFile) {
         const formData = new FormData();
         formData.append("image", blobFile, "foto.jpg");
-        
-        const urlAPI = "https:" + "//" + "api.imgbb.com" + "/1/upload?key=" + IMGBB_API_KEY;
-        
-        const respuesta = await fetch(urlAPI, {
-            method: "POST",
-            body: formData
-        });
-        
-        if (!respuesta.ok) {
-            throw new Error("Falla de carga");
-        }
-        
+        const urlAPI = "https:" + "//" + "://imgbb.com" + "/1/upload?key=" + IMGBB_API_KEY;
+        const respuesta = await fetch(urlAPI, { method: "POST", body: formData });
+        if (!respuesta.ok) throw new Error("Falla de carga");
         const datos = await respuesta.json();
         return datos.data.url; 
     }
@@ -136,19 +125,12 @@
                 const porc = Math.round((i / totalFotos) * 100);
                 const txtProgreso = document.getElementById('progreso-texto');
                 if(txtProgreso) txtProgreso.innerText = porc + "%";
-                
-                // 1. Achicamos la imagen localmente
                 const archivoComprimido = await procesarYComprimir(fotoInput.files[i]);
-                // 2. La subimos liviana a la nube
                 const urlFoto = await subirAImgBB(archivoComprimido);
                 linksFotos.push(urlFoto);
             }
-            
-            const txtProgreso = document.getElementById('progreso-texto');
-            if(txtProgreso) txtProgreso.innerText = "100%";
-            
         } catch(error) {
-            alert("Hubo un inconveniente con el tamaño de las imágenes o la conexión. Intenta de nuevo seleccionando menos fotos o imágenes más livianas.");
+            alert("Hubo un inconveniente. Intenta de nuevo.");
             if(boton) boton.style.display = 'block';
             if(estadoCarga) estadoCarga.style.display = 'none';
             return;
@@ -158,10 +140,16 @@
         const datosString = JSON.stringify(datosRecuerdo);
         const datosBase64 = btoa(encodeURIComponent(datosString));
         
-        const urlVisor = "https:" + "//" + "ve-xont.github.io" + "/recuerdos/visor.html?d=" + datosBase64;
-        const googleQRUrl = "https:" + "//" + "://googleapis.com" + "/chart?chs=300x300&cht=qr&chl=" + encodeURIComponent(urlVisor) + "&choe=UTF-8";
+        // El texto que le daremos al cliente contiene la clave cifrada de su visor
+        const codigoFinalParaCliente = datosBase64;
         
-        document.getElementById('qrcode-img').src = googleQRUrl;
+        document.getElementById('codigo-pedido-txt').innerText = codigoFinalParaCliente;
+
+        // Configuramos el enlace para que te mande el código directo a tu WhatsApp
+        // REEMPLAZA TU_NUMERO_AQUI por tu celular de trabajo con código de país (Ej: 5491122334455)
+        const tuTelefono = "1132061841"; 
+        const mensajeWhatsApp = `Hola VEXONT! Ya cargué mis fotos de recuerdo. Mi código de pedido privado es:\n\n${codigoFinalParaCliente}`;
+        document.getElementById('lnk-whatsapp').href = "https://wa.me" + tuTelefono + "?text=" + encodeURIComponent(mensajeWhatsApp);
 
         if(estadoCarga) estadoCarga.style.display = 'none';
         document.getElementById('formulario-section').style.display = 'none';
